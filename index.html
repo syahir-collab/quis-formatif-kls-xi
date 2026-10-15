@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kuis Digital Literacy & Social Media</title>
+<style>
+:root{--bg:#07111f;--panel:#101f33;--text:#edf5ff;--muted:#a9bbd2;--accent:#5eead4;--blue:#60a5fa;--border:#29415e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#123050 0,#07111f 58%);color:var(--text);font:16px/1.6 system-ui,Segoe UI,Arial,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:11px 16px;font-weight:750}
+.primary{background:linear-gradient(135deg,var(--accent),var(--blue));color:#061322}
+.secondary{background:#203752;color:var(--text);border:1px solid var(--border)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.wrap{max-width:900px;margin:auto;padding:20px}
+.eyebrow{color:var(--accent);font-size:.8rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.panel{background:linear-gradient(145deg,rgba(16,31,51,.98),rgba(12,25,42,.98));border:1px solid var(--border);border-radius:18px;padding:clamp(16px,3vw,26px);margin:16px 0;box-shadow:0 18px 50px #0003}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.meta{color:var(--muted)}
+.progress{height:8px;background:#20334a;border-radius:99px;overflow:hidden;margin:14px 0}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--blue))}
+.passage{white-space:pre-line;line-height:1.8;background:#0b1a2b;border-radius:12px;padding:15px;color:#e2edf9}
+.qtext{font-size:1.12rem;font-weight:750;margin:20px 0 12px}
+.options{display:grid;gap:9px}
+.option{display:flex;gap:10px;align-items:flex-start;background:#0b1a2c;border:1px solid var(--border);padding:12px;border-radius:12px;cursor:pointer}
+.option.selected{border-color:var(--accent);background:#103044}
+.option input{margin-top:6px;accent-color:var(--accent)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.qnav{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;margin-top:16px}
+.qnav button{padding:6px 0;background:#172b42;color:var(--muted);border:1px solid var(--border);border-radius:8px}
+.qnav button.done{border-color:#3b8c83;color:#eafff9}
+.qnav button.current{background:var(--accent);color:#07111f}
+.hidden{display:none!important}.field{margin-bottom:12px}.field label{display:block;margin-bottom:5px;color:#c6d7e9}.field input{width:100%;padding:12px;background:#091727;border:1px solid var(--border);border-radius:10px;color:var(--text);font:inherit}.field input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.center{text-align:center}
+.resultnum{font-size:clamp(3.5rem,14vw,6.5rem);font-weight:900;color:var(--accent);line-height:1.1}
+.resultgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+.stat{padding:13px;background:#0a192a;border:1px solid var(--border);border-radius:12px}
+.stat b{display:block;font-size:1.35rem}
+.footer{text-align:center;color:#8299b5;font-size:.82rem;padding:20px 0}
+@media(max-width:700px){.wrap{padding:12px}.resultgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.qnav{grid-template-columns:repeat(5,minmax(0,1fr))}}
+</style>
+</head>
+<body><div class="wrap">
+
+<section id="identity" class="panel">
+  <div class="eyebrow">Digital Literacy & Social Media</div>
+  <h1 style="margin:6px 0 4px">Kuis 25 Soal</h1>
+  <p class="meta">Isi identitas berikut sebelum memulai kuis.</p>
+  <div class="field"><label for="studentName">Nama Siswa</label><input id="studentName" type="text" autocomplete="off" placeholder="Masukkan nama lengkap"></div>
+  <div class="field"><label for="studentClass">Kelas</label><input id="studentClass" type="text" autocomplete="off" placeholder="Contoh: XI-2"></div>
+  <div class="field"><label for="studentSchool">Asal Sekolah</label><input id="studentSchool" type="text" autocomplete="off" placeholder="Masukkan nama sekolah"></div>
+  <div class="actions"><button class="primary" id="startBtn">Mulai Mengerjakan →</button></div>
+</section>
+
+<section id="quiz" class="hidden">
+  <div class="panel">
+    <div class="topline">
+      <div><div class="eyebrow" id="category"></div><h2 id="counter" style="margin:4px 0">Soal 1 dari 25</h2></div>
+      <div class="meta" id="answered">Terjawab 0/25</div>
+    </div>
+    <div class="progress"><div id="progress"></div></div>
+    <div id="context" class="passage"></div>
+    <div id="question" class="qtext"></div>
+    <div id="options" class="options"></div>
+    <div class="actions" style="justify-content:space-between">
+      <button class="secondary" id="prev">← Sebelumnya</button>
+      <div class="actions" style="margin:0">
+        <button class="secondary" id="clear">Hapus Jawaban</button>
+        <button class="primary" id="next">Berikutnya →</button>
+      </div>
+    </div>
+    <div class="qnav" id="qnav"></div>
+  </div>
+  <div class="actions" style="justify-content:flex-end"><button class="primary" id="submit">Selesai & Lihat Skor ✓</button></div>
+</section>
+
+<section id="results" class="hidden">
+  <div class="panel center">
+    <div class="eyebrow">Skor Akhir Pencapaian</div>
+    <h2 id="who" style="margin:6px 0 0"></h2>
+    <p id="whoInfo" class="meta" style="margin:0"></p>
+    <div class="resultnum"><span id="score">0</span><span style="font-size:1.4rem;color:var(--muted)"> / 100</span></div>
+    <div class="actions" style="justify-content:center">
+      <button class="primary" id="restart">Ulangi Kuis</button>
+      <button class="secondary" onclick="window.print()">Cetak Hasil</button>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">Digital Literacy & Social Media • Pengembang Asep Subagja, S.Pd — SMAN 1 Ciracap</footer>
+</div>
+<script>
+const questions=[
+{cat:"Digital Literacy",ctx:"A message in a class group claims that all schools will close tomorrow. It has no date, author, or link to an official announcement.",q:"What is the most responsible action before sharing the message?",o:["Forward it immediately to every group","Add a dramatic headline to attract attention","Check official school or government channels first","Assume it is true because many people shared it","Delete all messages from the group"],a:2},
+{cat:"Digital Literacy",ctx:"A student finds two websites reporting different figures about the same environmental issue.",q:"Which action best demonstrates information literacy?",o:["Choose the website with the brightest design","Compare the authors, dates, evidence, and original sources","Use the first result without reading it","Select the figure that supports a personal opinion","Copy both figures without mentioning the sources"],a:1},
+{cat:"Digital Literacy",ctx:"Rina uses the same simple password for her email, social media, and learning platform.",q:"Which recommendation would improve Rina's account security most directly?",o:["Post her password in a private group","Use a unique strong password for each account and enable two-factor authentication","Share her password only with close friends","Use her birth date for every password","Turn off every security notification"],a:1},
+{cat:"Digital Literacy",ctx:"A photo posted online shows a student’s school badge and home address in the background.",q:"What is the main digital-privacy concern?",o:["The photo has too many colors","The image file may be too large","The post has few likes","Personal information could be exposed to unintended viewers","The caption is written in English"],a:3},
+{cat:"Digital Literacy",ctx:"A creator posts a shocking claim but provides no evidence or expert source.",q:"What should a digitally literate reader do?",o:["Treat it as fact because it is shocking","Check reliable sources and seek evidence before accepting it","Share it with a warning but no verification","Judge accuracy only from the number of likes","Believe it if the creator has many followers"],a:1},
+{cat:"Analytical Exposition",ctx:"Read the text: “Schools should teach digital literacy. First, students need to identify misleading information. Moreover, they must protect their personal data. Therefore, digital literacy should become a regular part of school learning.”",q:"What is the writer’s thesis?",o:["Students should stop using the internet","Misleading information is always easy to identify","Schools should teach digital literacy","Personal data is never important","All online content should be banned"],a:2},
+{cat:"Analytical Exposition",ctx:"In the text above, the writer gives two reasons: identifying misleading information and protecting personal data.",q:"What is the function of these two reasons?",o:["To introduce unrelated characters","To support the writer’s thesis","To tell a sequence of past events","To describe a physical place","To provide instructions for making an account"],a:1},
+{cat:"Analytical Exposition",ctx:"“In conclusion, social media can support learning when students use it critically and responsibly.”",q:"The phrase “In conclusion” most likely introduces the ...",o:["orientation of a narrative","list of materials","reiteration or concluding statement","conflict between characters","chronological sequence"],a:2},
+{cat:"Analytical Exposition",ctx:"A paragraph claims that social media helps students learn because they can discuss assignments, exchange resources, and ask questions outside school hours.",q:"Which option is the strongest supporting evidence for this claim?",o:["A personal insult aimed at people who disagree","A list of unrelated celebrity accounts","A claim that everyone loves social media","A relevant classroom survey showing how study groups use shared resources","A slogan with no explanation"],a:3},
+{cat:"Analytical Exposition",ctx:"A writer argues that schools should promote responsible social media use. One student objects: “Social media always wastes time.”",q:"Which response best strengthens an analytical argument?",o:["“You are wrong, and your opinion is silly.”","“I refuse to discuss this.”","“Everyone who disagrees is uninformed.”","“There is no need to give reasons.”","“It can distract users, but clear goals and time limits can help students use it productively.”"],a:4},
+{cat:"Expressing Opinion",ctx:"Your class is discussing whether students should have a class social-media account for announcements.",q:"Which sentence expresses an opinion politely?",o:["“In my view, a class account could make announcements easier to access.”","“You must agree with me.”","“Only foolish students disagree.”","“That idea is forbidden to discuss.”","“I know everything about this topic.”"],a:0},
+{cat:"Expressing Opinion",ctx:"You want to ask your partner what they think about using phones for learning.",q:"Which question is appropriate?",o:["“Why is your opinion always wrong?”","“What do you think about using phones for learning?”","“You agree with me, don’t you?”","“Stop talking about your ideas.”","“You have no choice.”"],a:1},
+{cat:"Expressing Opinion",ctx:"Dita says, “I believe students should check a post before sharing it.” You agree with her.",q:"Which response shows agreement?",o:["“I completely disagree with that.”","“I’m not sure I follow your point.”","“I agree. Checking first can prevent misinformation from spreading.”","“That has nothing to do with the topic.”","“I refuse to listen.”"],a:2},
+{cat:"Expressing Opinion",ctx:"Your friend says, “Every viral post must be true.” You disagree but want to remain respectful.",q:"What is the best response?",o:["“That is a stupid thing to say.”","“Be quiet; you know nothing.”","“I will not talk to you again.”","“I see your point, but popularity does not guarantee that a post is accurate.”","“You must delete your account now.”"],a:3},
+{cat:"Expressing Opinion",ctx:"A classmate asks, “How do you feel about limiting screen time before bed?”",q:"Which answer is a relevant opinion?",o:["“The classroom has thirty desks.”","“Screen time is a noun phrase.”","“My phone is black.”","“Yesterday was Tuesday.”","“I think it is helpful because it can leave more time for rest.”"],a:4},
+{cat:"Social Media Vocabulary",ctx:"A person repeatedly sends insulting messages to another student through a social-media platform.",q:"Which term best describes this behavior?",o:["Cyberbullying","Fact-checking","Engagement","Uploading","Bookmarking"],a:0},
+{cat:"Social Media Vocabulary",ctx:"Before reposting a claim, Bima checks whether trustworthy sources support it.",q:"What is Bima doing?",o:["Live-streaming","Fact-checking","Tagging","Scrolling","Following"],a:1},
+{cat:"Social Media Vocabulary",ctx:"A user changes an account setting so that only approved followers can see their posts.",q:"Which term is most relevant?",o:["Trending topic","Engagement rate","Privacy settings","Hashtag challenge","Clickbait"],a:2},
+{cat:"Social Media Vocabulary",ctx:"A post uses a sensational headline to make people click, although the content does not fully support the headline.",q:"Which term best describes the headline?",o:["Digital footprint","Direct message","Verified source","Clickbait","Two-factor authentication"],a:3},
+{cat:"Social Media Vocabulary",ctx:"A user writes a short message privately to another user through a platform.",q:"What is this feature commonly called?",o:["A public feed","A hashtag","A trending topic","An engagement rate","A direct message (DM)"],a:4},
+{cat:"Digital Literacy",ctx:"An email says: “Your account will be closed unless you click this link and enter your password now.” The sender’s address looks unusual.",q:"What is the best action?",o:["Click the link quickly to avoid losing the account","Reply with your password","Forward the email and link to friends as a warning","Ignore the link, report the email, and check your account through the official app or website","Enter a fake password to test the link"],a:3},
+{cat:"Analytical Exposition",ctx:"“Social media helps students collaborate on assignments. ______, it can distract them if they use it without time limits.”",q:"Which connector best completes the sentence?",o:["However","Therefore","Because","For example","Besides"],a:0},
+{cat:"Expressing Opinion",ctx:"A classmate says, “Online learning is better than face-to-face learning.” You agree only in part.",q:"Which response expresses partial agreement politely?",o:["“That is completely wrong.”","“I agree with everything you say.”","“I don’t care about this topic.”","“Online learning does not exist.”","“I partly agree; it is flexible, but face-to-face lessons help students interact directly.”"],a:4},
+{cat:"Social Media Vocabulary",ctx:"A user’s old posts, comments, and photos can still be found online years later.",q:"Which term describes this trail of online activity?",o:["Trending topic","Digital footprint","Direct message","Hashtag","Feed"],a:1},
+{cat:"Social Media Vocabulary",ctx:"A post receives thousands of likes, comments, and shares within one day.",q:"Which term refers to this level of user interaction with content?",o:["Privacy settings","Clickbait","Engagement","Cyberbullying","Fact-checking"],a:2}
+];
+let current=0,answers=Array(questions.length).fill(null);
+const $=id=>document.getElementById(id);
+function shuffleQuestions(){
+  for(let i=questions.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [questions[i],questions[j]]=[questions[j],questions[i]];
+  }
+}
+function renderNav(){const n=$("qnav");n.innerHTML="";questions.forEach((q,i)=>{const b=document.createElement("button");b.textContent=i+1;b.className=(answers[i]!==null?"done ":"")+(i===current?"current":"");b.onclick=()=>{current=i;render()};n.appendChild(b)})}
+function render(){
+  const q=questions[current];
+  $("category").textContent=q.cat;
+  $("counter").textContent=`Soal ${current+1} dari ${questions.length}`;
+  $("answered").textContent=`Terjawab ${answers.filter(x=>x!==null).length}/${questions.length}`;
+  $("progress").style.width=((current+1)/questions.length*100)+"%";
+  $("context").textContent=q.ctx;
+  $("question").textContent=q.q;
+  $("options").innerHTML="";
+  q.o.forEach((op,i)=>{
+    const l=document.createElement("label");
+    l.className="option"+(answers[current]===i?" selected":"");
+    const r=document.createElement("input");
+    r.type="radio";r.name="answer";r.checked=answers[current]===i;
+    r.onchange=()=>{answers[current]=i;render()};
+    const s=document.createElement("span");
+    s.textContent=String.fromCharCode(65+i)+". "+op;
+    l.append(r,s);$("options").appendChild(l);
+  });
+  $("prev").disabled=current===0;
+  $("next").disabled=current===questions.length-1;
+  renderNav();
+}
+function showResults(){
+  let correct=0,blank=0;
+  answers.forEach((a,i)=>{if(a===null)blank++;else if(a===questions[i].a)correct++});
+  const wrong=questions.length-correct-blank,score=Math.round(correct/questions.length*100);
+  $("quiz").classList.add("hidden");$("results").classList.remove("hidden");
+  $("who").textContent=$("studentName").value.trim();
+  $("whoInfo").textContent="Kelas "+$("studentClass").value.trim()+" • "+$("studentSchool").value.trim();
+  $("score").textContent=score;
+  window.scrollTo(0,0);
+}
+$("prev").onclick=()=>{if(current>0){current--;render()}};
+$("next").onclick=()=>{if(current<questions.length-1){current++;render()}};
+$("clear").onclick=()=>{answers[current]=null;render()};
+$("submit").onclick=()=>{const n=answers.filter(x=>x===null).length;if(n&&!confirm(`Masih ada ${n} soal belum dijawab. Lihat skor sekarang?`))return;showResults()};
+$("startBtn").onclick=()=>{
+  if(!$("studentName").value.trim()||!$("studentClass").value.trim()||!$("studentSchool").value.trim()){alert("Mohon lengkapi nama siswa, kelas, dan asal sekolah.");return}
+  shuffleQuestions();current=0;answers=Array(questions.length).fill(null);
+  $("identity").classList.add("hidden");$("quiz").classList.remove("hidden");render();window.scrollTo(0,0);
+};
+$("restart").onclick=()=>{
+  current=0;answers=Array(questions.length).fill(null);
+  $("studentName").value="";$("studentClass").value="";$("studentSchool").value="";
+  $("results").classList.add("hidden");$("identity").classList.remove("hidden");render();window.scrollTo(0,0);
+};
+render();
+</script></body></html>
